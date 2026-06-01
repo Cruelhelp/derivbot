@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deriv Trading Bot Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .mode-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .mode-demo {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+
+        .mode-live {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.running {
+            background: #4CAF50;
+        }
+
+        .status-dot.stopped {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-danger:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+            padding: 10px 16px;
+            font-size: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: #0b7dda;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-value.positive {
+            color: #4CAF50;
+        }
+
+        .stat-value.negative {
+            color: #f44336;
+        }
+
+        .stat-value.neutral {
+            color: #2196F3;
+        }
+
+        .trades-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .trades-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .trades-header h2 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .trades-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f5f5f5;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        .trade-win {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .trade-loss {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .pnl-positive {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .pnl-negative {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📈 Deriv Trading Bot</h1>
+                <div class="mode-badge mode-live">LIVE MODE</div>
+                <div class="status-indicator">
+                    <div class="status-dot stopped" id="statusDot"></div>
+                    <span id="statusText">STOPPED</span>
+                </div>
+                <div id="connectionStatus" style="color: #f44336; font-size: 12px; margin-top: 5px; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" id="startBtn" onclick="startBot()">▶ Start Bot</button>
+            <button class="btn-danger" id="stopBtn" onclick="stopBot()" disabled>⏹ Stop Bot</button>
+            <button class="btn-secondary" onclick="clearHistory()">🗑 Clear History</button>
+            <button class="btn-secondary" onclick="resetStats()">🔄 Reset Stats</button>
+            <button class="btn-secondary" onclick="exportTrades()">💾 Export</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Real Account Balance</div>
+                <div class="stat-value neutral" id="realBalance">$0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Demo Account Balance</div>
+                <div class="stat-value neutral" id="demoBalance">$0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Current Balance</div>
+                <div class="stat-value neutral" id="balance">$0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Total P&L</div>
+                <div class="stat-value" id="pnl">$0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Total Trades</div>
+                <div class="stat-value" id="tradesCount">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value" id="winRate">0%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Wins</div>
+                <div class="stat-value positive" id="wins">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Losses</div>
+                <div class="stat-value negative" id="losses">0</div>
+            </div>
+        </div>
+
+        <div class="trades-section">
+            <div class="trades-header">
+                <h2>Trade History</h2>
+                <div id="tradeCount" style="color: #999; font-size: 12px;">0 trades</div>
+            </div>
+
+            <table id="tradesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Result</th>
+                        <th>P&L</th>
+                    </tr>
+                </thead>
+                <tbody id="tradesBody">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <p>No trades yet. Click "Start Bot" to begin trading.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>Deriv Trading Bot v1.0 | Real-time Dashboard</p>
+        </div>
+    </div>
+
+    <script>
+        let updateInterval;
+
+        function startBot() {
+            fetch('/api/start', { method: 'POST' })
+                .then(r => r.json())
+                .then(() => {
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('statusDot').className = 'status-dot running';
+                    document.getElementById('statusText').textContent = 'RUNNING';
+                    updateStats();
+                    if (updateInterval) clearInterval(updateInterval);
+                    updateInterval = setInterval(updateStats, 500);
+                });
+        }
+
+        function stopBot() {
+            fetch('/api/stop', { method: 'POST' })
+                .then(r => r.json())
+                .then(() => {
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('statusDot').className = 'status-dot stopped';
+                    document.getElementById('statusText').textContent = 'STOPPED';
+                    if (updateInterval) clearInterval(updateInterval);
+                });
+        }
+
+        function updateStats() {
+            fetch('/api/stats')
+                .then(r => r.json())
+                .then(data => {
+                    // Update connection status
+                    const connStatus = document.getElementById('connectionStatus');
+                    if (data.real_balance === 0) {
+                        connStatus.textContent = '⚠️ Connection Issue: Check firewall/network';
+                        connStatus.style.color = '#f44336';
+                    } else {
+                        connStatus.textContent = '✓ API Connected';
+                        connStatus.style.color = '#4CAF50';
+                    }
+
+                    // Update real balance
+                    const realBalanceEl = document.getElementById('realBalance');
+                    realBalanceEl.textContent = `$${data.real_balance.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                    realBalanceEl.className = data.real_balance > 0 ? 'stat-value positive' : 'stat-value neutral';
+
+                    // Update demo balance
+                    const demoBalanceEl = document.getElementById('demoBalance');
+                    demoBalanceEl.textContent = `$${data.demo_balance.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                    demoBalanceEl.className = data.demo_balance > 0 ? 'stat-value positive' : 'stat-value neutral';
+
+                    // Update current balance
+                    const balanceEl = document.getElementById('balance');
+                    balanceEl.textContent = `$${data.current_balance.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                    balanceEl.className = data.current_balance > 0 ? 'stat-value positive' : 'stat-value neutral';
+
+                    const pnlEl = document.getElementById('pnl');
+                    pnlEl.textContent = `${data.total_pnl > 0 ? '+' : ''}$${data.total_pnl.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                    pnlEl.className = data.total_pnl > 0 ? 'stat-value positive' : 
+                                     data.total_pnl < 0 ? 'stat-value negative' : 'stat-value neutral';
+
+                    document.getElementById('tradesCount').textContent = data.trades_count;
+                    document.getElementById('winRate').textContent = `${data.win_rate}%`;
+                    document.getElementById('wins').textContent = data.wins;
+                    document.getElementById('losses').textContent = data.losses;
+                    document.getElementById('tradeCount').textContent = `${data.trades_count} trades`;
+
+                    updateTrades();
+                });
+        }
+
+        function updateTrades() {
+            fetch('/api/trades')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('tradesBody');
+                    
+                    if (data.trades.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><p>No trades yet. Click "Start Bot" to begin trading.</p></td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = data.trades.map(trade => `
+                        <tr>
+                            <td>${trade.id}</td>
+                            <td>${trade.time}</td>
+                            <td>${trade.symbol}</td>
+                            <td>${trade.type}</td>
+                            <td>$${trade.amount}</td>
+                            <td class="trade-${trade.result.toLowerCase()}">${trade.result}</td>
+                            <td class="pnl-${trade.pnl > 0 ? 'positive' : 'negative'}">${trade.pnl > 0 ? '+' : ''}$${trade.pnl}</td>
+                        </tr>
+                    `).join('');
+                });
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all trade history?')) {
+                fetch('/api/clear', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(() => updateStats());
+            }
+        }
+
+        function resetStats() {
+            if (confirm('Reset all stats? This cannot be undone.')) {
+                fetch('/api/reset', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(() => updateStats());
+            }
+        }
+
+        function exportTrades() {
+            fetch('/api/export', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    alert(`Trades exported to: ${data.filename}`);
+                });
+        }
+
+        // Initial load
+        updateStats();
+    </script>
+</body>
+</html>
