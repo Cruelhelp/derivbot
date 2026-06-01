@@ -43,6 +43,38 @@ To customize the trading strategy, edit the `simple_strategy()` method in `tradi
 - **direction**: Set to "CALL" or "PUT"
 - **duration**: Modify trade duration in minutes
 
+## Railway Deployment
+
+This project includes Railway support for deployment.
+
+1. Add your Railway API token to `.env`:
+   ```env
+   RAILWAY_TOKEN=your_railway_token_here
+   ```
+2. Check connection:
+   ```bash
+   python railway_connect.py status
+   ```
+3. List your Railway projects:
+   ```bash
+   python railway_connect.py projects
+   ```
+4. Inspect the Railway project created for this repo:
+   ```bash
+   python railway_connect.py project 6879b6de-c90c-4b35-add9-1d99b9a4f95a
+   ```
+
+Railway will use `Procfile` to start the Flask app with:
+
+```text
+web: python app.py
+```
+
+If you want to inspect the deployed service directly, use:
+```bash
+python railway_connect.py service fd932ef3-2d37-469f-bbe7-e2cbaf283def
+```
+
 ## Available Symbols
 
 - `frxEURUSD` - EUR/USD
