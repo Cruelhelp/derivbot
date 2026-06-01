@@ -144,7 +144,7 @@ def reset_stats():
 def export_trades():
     export_data = {
         'export_date': datetime.now().isoformat(),
-        'final_balance': bot_state.balance,
+        'final_balance': bot_state.current_balance,
         'total_pnl': bot_state.total_pnl,
         'total_trades': bot_state.trades_count,
         'trades': bot_state.trade_history
@@ -298,6 +298,7 @@ async def execute_real_trade(websocket, symbol, amount, direction):
 
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     print(f"Starting Deriv Trading Bot Dashboard - LIVE MODE")
-    print(f"Open browser: http://localhost:5000")
-    app.run(debug=False, host='localhost', port=5000)
+    print(f"Listening on 0.0.0.0:{port}")
+    app.run(debug=False, host='0.0.0.0', port=port)
